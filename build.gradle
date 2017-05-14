@@ -1,0 +1,62 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+
+compileJava.options.encoding = 'UTF-8'
+
+mainClassName = "com.rick.Main"
+
+buildscript{
+	repositories{
+		maven {url "https://maven.atlassian.com/3rdparty"}
+		mavenCentral()
+	}
+	//must set classpath to let gradle know what need import
+	dependencies{
+		
+	}
+}
+
+repositories {
+    jcenter()
+	maven {url "https://maven.atlassian.com/3rdparty"}
+	mavenCentral()
+}
+
+
+dependencies {
+    compile group: 'org.json', name: 'json', version: '20090211'
+	compile group: 'net.wimpi', name: 'jamod', version: '1.2'
+	compile group: 'org.projectlombok', name: 'lombok', version: '1.16.16'
+
+	compile 'org.slf4j:slf4j-api:1.7.21'
+	
+    testCompile 'junit:junit:4.12'
+}
+
+jar{
+	manifest{
+		attributes 'Main-Class':"com.rick.Main"
+	}
+	//All dependencies in one jar
+	/*from {
+		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+	}*/
+}
+
+task fatJar(type: Jar) {
+	manifest.from jar.manifest
+	classifier = 'all'
+	from {
+		configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+	} {
+		exclude "META-INF/*.SF"
+		exclude "META-INF/*.DSA"
+		exclude "META-INF/*.RSA"
+	}
+	with jar
+}
+//this will add a new jar file in libs called "example-all.jar" which contain all dependencies.
+artifacts {
+    archives fatJar
+}
