@@ -21,26 +21,21 @@ public class Main{
 	Main(){
 		
 		kafkaTest();
+		//modbusTest();
 	}
 	
 	public void kafkaTest(){
-		kafka = new kafkaUtil();
-		
-		
 		kafkaParamModel kpm  = new kafkaParamModel();
-		kpm.setSingleMessage("this is single test");
-		kpm.setMultiMessage(Arrays.asList("99","EE","*&^djfksj"));
+		kpm.setTopicsArray(Arrays.asList("test","Default"));
 		kpm.setTopic("test");
-		kafka.producerSendMessage(kpm);
+		kafka = new kafkaUtil(kpm);
 		
-		kafkaParamModel kpm1  = new kafkaParamModel();
-		kpm.setTopic("test");
-		kafka.consumerReceiveMessage(kpm1);
+		kafka.producerSendMessage(Arrays.asList("this","is","testu..."));
+		kafka.consumerReceiveMessage();
 		
 	}
 	
 	public void modbusTest(){
-		
 		mb = new modbusUtil();
 		// read Digital Input
 		// modbusParamModel m1 = new modbusParamModel();
@@ -84,25 +79,24 @@ public class Main{
 				m.setRegisterAddress(0);
 				m.setSlaveId(1);
 				m.setCount(20);
-				m.setIp("10.1.21.12");//192.168.30.40
-				mb.readHoldingRegister(m);
+				mb.readHoldingRegisterToKafka(m);
 			}
 		});
 		
-		Thread thread2 = new Thread(new Runnable(){
-			public void run(){
-				modbusParamModel m6 = new modbusParamModel();
-				m6.setRegisterAddress(0);
-				m6.setSlaveId(2);
-				m6.setCount(20);
-				m6.setPort(503);
-				m6.setIp("10.1.21.12");//192.168.30.40
-				mb.readHoldingRegister(m6);
-			}
-		});
+		// Thread thread2 = new Thread(new Runnable(){
+			// public void run(){
+				// modbusParamModel m6 = new modbusParamModel();
+				// m6.setRegisterAddress(0);
+				// m6.setSlaveId(2);
+				// m6.setCount(20);
+				// m6.setPort(503);
+				//m6.setIp("10.1.21.12");//192.168.30.40
+				// mb.readHoldingRegister(m6);
+			// }
+		// });
 		
 		thread1.start();
-		thread2.start();
+		//thread2.start();
 	}
 	
 	

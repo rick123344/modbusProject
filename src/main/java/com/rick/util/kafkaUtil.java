@@ -5,6 +5,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -17,47 +20,36 @@ import org.apache.kafka.common.errors.WakeupException;
 import com.rick.model.kafkaParamModel;
 
 public class kafkaUtil{
-	// Properties prop = null;
-	public kafkaUtil(){
-		
+	private Properties prop = null;
+	private String topic = "";
+	private List<String> topics = new ArrayList<String>();
+	public kafkaUtil(kafkaParamModel kafkaModel){
+		resetProperties(kafkaModel);
 	}
 	
-	// public resetProperties(kafkaParamModel kafkaModel){
-		// prop = new Properties();
-		// prop.put("bootstrap.servers",kafkaModel.getIp()+":"+kafkaModel.getPort());
-		// prop.put("group.id", kafkaModel.getGroupId());
-		// prop.put("acks","all");
-		// prop.put("retries", 0);
-		// prop.put("batch.size", 16384);
-		// prop.put("linger.ms", 1);
-		// prop.put("buffer.memory", 33554432);
-		// prop.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		// prop.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-	// }
-	
-	
-	public void producerSendMessage(kafkaParamModel kafkaModel){
-		Properties prop = new Properties();
+	public void resetProperties(kafkaParamModel kafkaModel){
+		prop = new Properties();
 		prop.put("bootstrap.servers",kafkaModel.getIp()+":"+kafkaModel.getPort());
 		prop.put("group.id", kafkaModel.getGroupId());
-		prop.put("acks","all");
-		prop.put("retries", 0);
-		prop.put("batch.size", 16384);
-		prop.put("linger.ms", 1);
-		prop.put("buffer.memory", 33554432);
+		prop.put("acks",kafkaModel.getAcks());
+		prop.put("retries", kafkaModel.getRetries());
+		prop.put("batch.size", kafkaModel.getBatchSize());
+		prop.put("linger.ms", kafkaModel.getLingerMs());
+		prop.put("buffer.memory", kafkaModel.getBufferMemory());
 		prop.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		prop.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		prop.put("key.deserializer", StringDeserializer.class.getName());
+		prop.put("value.deserializer", StringDeserializer.class.getName());
+		topic = kafkaModel.getTopic();
+		topics = kafkaModel.getTopicsArray();
+	}
+	
+	public void producerSendMessage(List<String> msg){
 		Producer<String, String> producer = null;
-		String msg = kafkaModel.getSingleMessage();
-		
 		try{
 			producer = new KafkaProducer<>(prop);
-			if(kafkaModel.getMultiMessage()!=null){
-				for(String m : kafkaModel.getMultiMessage()){
-					producer.send(new ProducerRecord<String,String>(kafkaModel.getTopic(),m));
-				}
-			}else{
-				producer.send(new ProducerRecord<String,String>(kafkaModel.getTopic(),msg));
+			for(String m : msg){
+				producer.send(new ProducerRecord<String,String>(topic,m));
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -68,22 +60,9 @@ public class kafkaUtil{
 		}
 	}
 	
-	public void consumerReceiveMessage(kafkaParamModel kafkaModel){
-		Properties prop = new Properties();
-		prop.put("bootstrap.servers",kafkaModel.getIp()+":"+kafkaModel.getPort());
-		prop.put("group.id", kafkaModel.getGroupId());
-		prop.put("acks","all");
-		prop.put("retries", 0);
-		prop.put("batch.size", 16384);
-		prop.put("linger.ms", 1);
-		prop.put("buffer.memory", 33554432);
-		prop.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		prop.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		prop.put("key.deserializer", StringDeserializer.class.getName());
-		prop.put("value.deserializer", StringDeserializer.class.getName());
+	public void consumerReceiveMessage(){
 		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop); 
-		consumer.subscribe(Arrays.asList("test","HelloKafka"));
-		
+		consumer.subscribe(topics);
 		try{
 			while (true) {
 				ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
