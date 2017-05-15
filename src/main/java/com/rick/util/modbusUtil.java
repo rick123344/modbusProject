@@ -1,5 +1,7 @@
 package com.rick.util;
 
+import java.util.concurrent.TimeUnit;
+
 import java.net.*;
 import java.io.*;
 import net.wimpi.modbus.*;
@@ -12,21 +14,12 @@ import com.rick.model.modbusParamModel;
 
 public class modbusUtil{
 	
-	private TCPMasterConnection con = null; //the connection
-	private ModbusTCPTransaction trans = null; //the transaction
-	
-	// private String ip = "127.0.0.1";
-	// private int port = 502;
-	// private int slaveId = 1;
-	// private int registerAddress = 0;
-	// private int count = 1;// the count of IR's to read
-	// private int repeat = 10;
-	
 	public modbusUtil(){}
 	
 	//single bit(1,0), read only , Digital
 	public String readDiscreteInput(modbusParamModel mpm){
-		
+		TCPMasterConnection con = null; //the connection
+		ModbusTCPTransaction trans = null; //the transaction
 		try{
 			//prepare addr 
 			InetAddress addr = InetAddress.getByName(mpm.getIp());
@@ -48,6 +41,7 @@ public class modbusUtil{
 				res = (ReadInputDiscretesResponse) trans.getResponse();
 				System.out.println("Digital Inputs Status=" + res.getDiscretes().toString());
 				k++;
+				TimeUnit.MILLISECONDS.sleep(300);
 			} while (k < repeat);
 			
 		}catch(Exception e){
@@ -64,6 +58,8 @@ public class modbusUtil{
 	
 	//single bit(1,0), read - write , Coil
 	public String readDiscreteOutputCoil(modbusParamModel mpm){
+		TCPMasterConnection con = null; //the connection
+		ModbusTCPTransaction trans = null; //the transaction
 		try{
 			//prepare addr 
 			InetAddress addr = InetAddress.getByName(mpm.getIp());
@@ -85,6 +81,7 @@ public class modbusUtil{
 				res = (ReadCoilsResponse) trans.getResponse();
 				System.out.println("Digital Inputs Status=" + res.getCoils().toString());
 				k++;
+				TimeUnit.MILLISECONDS.sleep(300);
 			} while (k < repeat);
 			
 		}catch(Exception e){
@@ -100,7 +97,8 @@ public class modbusUtil{
 	
 	//16bit word, read only, analog , analogue inputs
 	public String readInputRegister(modbusParamModel mpm){
-		System.out.println("\nInput Register.\n");
+		TCPMasterConnection con = null; //the connection
+		ModbusTCPTransaction trans = null; //the transaction
 		try{
 			//prepare addr 
 			InetAddress addr = InetAddress.getByName(mpm.getIp());
@@ -125,6 +123,7 @@ public class modbusUtil{
 				}
 				System.out.println("");
 				k++;
+				TimeUnit.MILLISECONDS.sleep(300);
 			} while (k < repeat);
 			
 		}catch(Exception e){
@@ -141,6 +140,8 @@ public class modbusUtil{
 	
 	//16bit word, read - write, analog
 	public String readHoldingRegister(modbusParamModel mpm){
+		TCPMasterConnection con = null; //the connection
+		ModbusTCPTransaction trans = null; //the transaction
 		try{
 			//prepare addr 
 			InetAddress addr = InetAddress.getByName(mpm.getIp());
@@ -160,12 +161,25 @@ public class modbusUtil{
 			do {
 				trans.execute();
 				res = (ReadMultipleRegistersResponse) trans.getResponse();
+				System.out.println(mpm.getPort()+" : ");
 				for(int i = 0; i<mpm.getCount(); i++){
 					System.out.print(", "+res.getRegisterValue(i));
 				}
 				System.out.println("");
 				k++;
+				TimeUnit.MILLISECONDS.sleep(300);
 			} while (k < repeat);
+			// while(true){
+				// trans.execute();
+				// res = (ReadMultipleRegistersResponse) trans.getResponse();
+				// System.out.println(mpm.getPort()+" : ");
+				// for(int i = 0; i<mpm.getCount(); i++){
+					// System.out.print(", "+res.getRegisterValue(i));
+				// }
+				// System.out.println("");
+				// k++;
+				// TimeUnit.MILLISECONDS.sleep(300);
+			// }
 			
 		}catch(Exception e){
 			e.printStackTrace();
